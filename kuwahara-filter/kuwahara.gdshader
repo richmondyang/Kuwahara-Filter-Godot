@@ -38,7 +38,7 @@ void fragment()
 		-2.0f * texture(_MainTex, UV + vec2( 0.0, d.y)).rgb +
 		-1.0f * texture(_MainTex, UV + vec2( d.x, d.y)).rgb
 		) / 4.0f;
-	
+		
 	// Structure Tensor (4x4 matrix)
 	vec4 t = vec4(dot(sobel_x, sobel_x), dot(sobel_y, sobel_y), dot(sobel_x, sobel_y), 1.0);
 	
