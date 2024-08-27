@@ -1,15 +1,15 @@
 shader_type canvas_item;
 
-uniform sampler2D _MainTex : hint_screen_texture;
+uniform sampler2D _MainTex : hint_screen_texture, repeat_disable, filter_nearest;
 
-uniform int _KernelSize = 2;
+uniform int _KernelSize = 6;
 uniform int _N = 8;
 
 uniform float _Hardness = 8;
 uniform float _Q = 8;
 uniform float _Alpha = 1;
 uniform float _ZeroCrossing = 0.58;
-uniform float _Zeta;
+uniform float _Zeta = 0.666;
 
 float gaussian(float sigma, float pos)
 {

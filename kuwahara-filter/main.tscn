@@ -1,13 +1,7 @@
-[gd_scene load_steps=6 format=3 uid="uid://dp6srqg3705vg"]
+[gd_scene load_steps=4 format=3 uid="uid://dp6srqg3705vg"]
 
-[ext_resource type="Texture2D" uid="uid://cre5s3u5nbn4a" path="res://grizzfernorender.png" id="1_h62my"]
-[ext_resource type="Shader" path="res://test.gdshader" id="1_oyvqt"]
+[ext_resource type="Texture2D" uid="uid://b6ibcqwipoau4" path="res://cat.jpg" id="1_y7x3l"]
 [ext_resource type="Shader" path="res://kuwahara.gdshader" id="2_dvt0w"]
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_n25o6"]
-shader = ExtResource("1_oyvqt")
-shader_parameter/radius = 2
-shader_parameter/offset = Vector3(0, 0, 0)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h3yj6"]
 shader = ExtResource("2_dvt0w")
@@ -21,14 +15,12 @@ shader_parameter/_Zeta = 0.666
 
 [node name="Node2D" type="Node2D"]
 
-[node name="Grizzfernorender" type="Sprite2D" parent="."]
-material = SubResource("ShaderMaterial_n25o6")
-position = Vector2(567.111, 319)
-scale = Vector2(0.303703, 0.303704)
-texture = ExtResource("1_h62my")
+[node name="Cat" type="Sprite2D" parent="."]
+position = Vector2(388, 219)
+scale = Vector2(0.236871, 0.236871)
+texture = ExtResource("1_y7x3l")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
-visible = false
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer"]
 material = SubResource("ShaderMaterial_h3yj6")
