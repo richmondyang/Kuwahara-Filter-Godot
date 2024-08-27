@@ -16,32 +16,32 @@ float gaussian(float sigma, float pos)
 	return (1.0f / sqrt(2.0f * PI * sigma * sigma)) * exp(-(pos * pos) / (2.0f * sigma * sigma));
 }
 
-void fragment() 
+vec4 sobel(vec2 screen_size, vec2 uv)
 {
 	// Calculate Eigenvectors and Eigenvalues
 	// Calculate Sobel to approximate structure tensor
-	vec2 d = SCREEN_PIXEL_SIZE.xy;
+	vec2 d = screen_size.xy;
 	
 	vec3 sobel_x = (
-		1.0f * texture(_MainTex, UV + vec2(-d.x, -d.y)).rgb +
-		2.0f * texture(_MainTex, UV + vec2(-d.x,  0.0)).rgb +
-		1.0f * texture(_MainTex, UV + vec2(-d.x,  d.y)).rgb +
-		-1.0f * texture(_MainTex, UV + vec2(d.x, -d.y)).rgb +
-		-2.0f * texture(_MainTex, UV + vec2(d.x,  0.0)).rgb +
-		-1.0f * texture(_MainTex, UV + vec2(d.x,  d.y)).rgb
+		1.0f * texture(_MainTex, uv + vec2(-d.x, -d.y)).rgb +
+		2.0f * texture(_MainTex, uv + vec2(-d.x,  0.0)).rgb +
+		1.0f * texture(_MainTex, uv + vec2(-d.x,  d.y)).rgb +
+		-1.0f * texture(_MainTex, uv + vec2(d.x, -d.y)).rgb +
+		-2.0f * texture(_MainTex, uv + vec2(d.x,  0.0)).rgb +
+		-1.0f * texture(_MainTex, uv + vec2(d.x,  d.y)).rgb
 		) / 4.0f;
 	vec3 sobel_y = (
-		1.0f * texture(_MainTex, UV + vec2(-d.x, -d.y)).rgb +
-		2.0f * texture(_MainTex, UV + vec2( 0.0, -d.y)).rgb +
-		1.0f * texture(_MainTex, UV + vec2( d.x, -d.y)).rgb +
-		-1.0f * texture(_MainTex, UV + vec2(-d.x, d.y)).rgb +
-		-2.0f * texture(_MainTex, UV + vec2( 0.0, d.y)).rgb +
-		-1.0f * texture(_MainTex, UV + vec2( d.x, d.y)).rgb
+		1.0f * texture(_MainTex, uv + vec2(-d.x, -d.y)).rgb +
+		2.0f * texture(_MainTex, uv + vec2( 0.0, -d.y)).rgb +
+		1.0f * texture(_MainTex, uv + vec2( d.x, -d.y)).rgb +
+		-1.0f * texture(_MainTex, uv + vec2(-d.x, d.y)).rgb +
+		-2.0f * texture(_MainTex, uv + vec2( 0.0, d.y)).rgb +
+		-1.0f * texture(_MainTex, uv + vec2( d.x, d.y)).rgb
 		) / 4.0f;
 		
 	// Structure Tensor (4x4 matrix)
 	vec4 t = vec4(dot(sobel_x, sobel_x), dot(sobel_y, sobel_y), dot(sobel_x, sobel_y), 1.0);
-	
+
 	// Calculate Eigenvalues
 	float lambda1 = 0.5 * (t.x + t.y + sqrt(t.x * t.x - 2.0 * t.x * t.y + t.y * t.y + 4.0 * t.z * t.z));
 	float lambda2 = 0.5 * (t.x + t.y - sqrt(t.x * t.x - 2.0 * t.x * t.y + t.y * t.y + 4.0 * t.z * t.z));
@@ -71,16 +71,19 @@ void fragment()
 	}
 	
 	// Kernel deform factors
-	vec4 fac = vec4(n, phi, A);
-	
+	return vec4(n, phi, A);
+}
+
+vec4 kuwahara(vec2 n, float phi, float A, vec2 d, vec2 uv)
+{
 	// Kuwahara Filter
 	int radius = _KernelSize / 2;
-	float a = float((radius)) * clamp((_Alpha + fac.w) / _Alpha, 0.1, 2.0);
-	float b = float((radius)) * clamp(_Alpha / (_Alpha + fac.w), 0.1, 2.0);
+	float a = float((radius)) * clamp((_Alpha + A) / _Alpha, 0.1, 2.0);
+	float b = float((radius)) * clamp(_Alpha / (_Alpha + A), 0.1, 2.0);
 	
 	// Displace kernel
-	float cos_phi = cos(fac.z);
-	float sin_phi = sin(fac.z);
+	float cos_phi = cos(phi);
+	float sin_phi = sin(phi);
 	
 	mat2 R = mat2(vec2(cos_phi, -sin_phi), vec2(sin_phi, cos_phi));
 	mat2 S = mat2(vec2(0.5 / a, 0.0), vec2(0.0, 0.5 / b));
@@ -109,7 +112,7 @@ void fragment()
 			vec2 vec = SR * vec2(float(x), float(y));
 			if (dot(vec, vec) <= 0.25)
 			{
-				vec3 c = texture(_MainTex, UV + vec2(float(x), float(y)) * d).rgb;
+				vec3 c = texture(_MainTex, uv + vec2(float(x), float(y)) * d).rgb;
 				c = clamp(c, 0.0, 1.0);
 				float sum = 0.0;
 				float w[8];
@@ -169,5 +172,13 @@ void fragment()
 
 		output += vec4(m[k].rgb * w, w);
 	}
+	return clamp(output / output.w, 0.0, 1.0);
+}
+
+void fragment() 
+{
+	vec4 fac = sobel(SCREEN_PIXEL_SIZE, UV);
+	vec4 output = kuwahara(fac.xy, fac.z, fac.w, SCREEN_PIXEL_SIZE, UV);
+
 	COLOR = clamp(output / output.w, 0.0, 1.0);
 }
