@@ -8,10 +8,10 @@ shader = ExtResource("2_dvt0w")
 shader_parameter/_KernelSize = 6
 shader_parameter/_N = 8
 shader_parameter/_Hardness = 8.0
-shader_parameter/_Q = 1.0
+shader_parameter/_Q = 8.0
 shader_parameter/_Alpha = 1.0
 shader_parameter/_ZeroCrossing = 0.58
-shader_parameter/_Zeta = 0.152
+shader_parameter/_Zeta = 0.666
 
 [node name="Node2D" type="Node2D"]
 

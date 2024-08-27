@@ -6,10 +6,15 @@ uniform int _KernelSize = 2;
 uniform int _N = 8;
 
 uniform float _Hardness = 8;
-uniform float _Q;
+uniform float _Q = 8;
 uniform float _Alpha = 1;
 uniform float _ZeroCrossing = 0.58;
 uniform float _Zeta;
+
+float gaussian(float sigma, float pos)
+{
+	return (1.0f / sqrt(2.0f * PI * sigma * sigma)) * exp(-(pos * pos) / (2.0f * sigma * sigma));
+}
 
 void fragment() 
 {
@@ -113,7 +118,6 @@ void fragment()
 				// Polynomial Weights
 				vxx = _Zeta - eta * vec.x * vec.x;
 				vyy = _Zeta - eta * vec.y * vec.y;
-				
 				z = max(0, vec.y + vxx); 
 				w[0] = z * z;
 				sum += w[0];
