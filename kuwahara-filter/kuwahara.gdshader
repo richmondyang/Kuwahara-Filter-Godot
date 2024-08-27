@@ -4,11 +4,10 @@ uniform sampler2D _MainTex : hint_screen_texture;
 
 uniform int _KernelSize = 2;
 uniform int _N = 8;
-uniform int _Size;
 
 uniform float _Hardness = 8;
 uniform float _Q;
-uniform float _Alpha;
+uniform float _Alpha = 1;
 uniform float _ZeroCrossing = 0.58;
 uniform float _Zeta;
 
@@ -16,7 +15,7 @@ void fragment()
 {
 	// Calculate Eigenvectors and Eigenvalues
 	// Calculate Sobel to approximate structure tensor
-	vec2 d = TEXTURE_PIXEL_SIZE.xy;
+	vec2 d = SCREEN_PIXEL_SIZE.xy;
 	
 	vec3 sobel_x = (
 		1.0f * texture(_MainTex, UV + vec2(-d.x, -d.y)).rgb +
@@ -81,7 +80,7 @@ void fragment()
 	mat2 R = mat2(vec2(cos_phi, -sin_phi), vec2(sin_phi, cos_phi));
 	mat2 S = mat2(vec2(0.5 / a, 0.0), vec2(0.0, 0.5 / b));
 	
-	mat2 SR = S * R;
+	mat2 SR = matrixCompMult(S, R);
 	
 	int max_x = int(sqrt(a * a * cos_phi * cos_phi + b * b * sin_phi * sin_phi));
 	int max_y = int(sqrt(a * a * sin_phi * sin_phi + b * b * cos_phi * cos_phi));
@@ -103,7 +102,7 @@ void fragment()
 		for(int x = -max_x; x <= max_x; x++)
 		{
 			vec2 vec = SR * vec2(float(x), float(y));
-			if (dot(v, v) <= 0.25)
+			if (dot(vec, vec) <= 0.25)
 			{
 				vec3 c = texture(_MainTex, UV + vec2(float(x), float(y)) * d).rgb;
 				c = clamp(c, 0.0, 1.0);
@@ -113,7 +112,7 @@ void fragment()
 				
 				// Polynomial Weights
 				vxx = _Zeta - eta * vec.x * vec.x;
-				vyy = _Zeta - eta * vec.y * v.y;
+				vyy = _Zeta - eta * vec.y * vec.y;
 				
 				z = max(0, vec.y + vxx); 
 				w[0] = z * z;
@@ -143,7 +142,7 @@ void fragment()
 				w[7] = z * z;
 				sum += w[7];
 				
-				float g = exp(-3.125 * dot(v, v)) / sum;
+				float g = exp(-3.125 * dot(vec, vec)) / sum;
 				
 				for (int k = 0; k < 8; k++)
 				{
@@ -156,16 +155,15 @@ void fragment()
 	}
 	
 	vec4 output = vec4(0.0);
-	for (int k = 0; k < _N; k++)
+    for (int k = 0; k < _N; ++k) 
 	{
-		m[k].rgb /= m[k].w;
+    	m[k].rgb /= m[k].w;
 		s[k] = abs(s[k] / m[k].w - m[k].rgb * m[k].rgb);
-		
+
 		float sigma2 = s[k].r + s[k].g + s[k].b;
 		float w = 1.0 / (1.0 + pow(_Hardness * 1000.0 * sigma2, 0.5 * _Q));
-		
+
 		output += vec4(m[k].rgb * w, w);
 	}
-	
 	COLOR = clamp(output / output.w, 0.0, 1.0);
 }
