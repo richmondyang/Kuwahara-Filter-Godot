@@ -1,6 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://dp6srqg3705vg"]
+[gd_scene load_steps=5 format=3 uid="uid://dp6srqg3705vg"]
 
 [ext_resource type="Texture2D" uid="uid://b6ibcqwipoau4" path="res://cat.jpg" id="1_y7x3l"]
+[ext_resource type="Texture2D" uid="uid://7g24wgs6fqcb" path="res://longhairtest.jpg" id="1_ybsj6"]
 [ext_resource type="Shader" path="res://kuwahara.gdshader" id="2_dvt0w"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_h3yj6"]
@@ -14,6 +15,12 @@ shader_parameter/_ZeroCrossing = 0.58
 shader_parameter/_Zeta = 0.1
 
 [node name="Node2D" type="Node2D"]
+
+[node name="Longhairtest" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(1049, 703)
+scale = Vector2(0.670785, 0.670785)
+texture = ExtResource("1_ybsj6")
 
 [node name="Cat" type="Sprite2D" parent="."]
 position = Vector2(959.523, 541.125)
