@@ -16,14 +16,17 @@ shader_parameter/_Zeta = 0.1
 [node name="Node2D" type="Node2D"]
 
 [node name="Cat" type="Sprite2D" parent="."]
-position = Vector2(388, 219)
-scale = Vector2(0.236871, 0.236871)
+position = Vector2(959.523, 541.125)
+scale = Vector2(0.58568, 0.58568)
 texture = ExtResource("1_y7x3l")
 
 [node name="CanvasLayer2" type="CanvasLayer" parent="."]
 
 [node name="ColorRect" type="ColorRect" parent="CanvasLayer2"]
 material = SubResource("ShaderMaterial_h3yj6")
+anchors_preset = -1
+anchor_right = 0.4
+anchor_bottom = 0.4
 offset_right = 1152.0
 offset_bottom = 648.0
 metadata/_edit_use_anchors_ = true

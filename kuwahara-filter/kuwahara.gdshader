@@ -210,10 +210,8 @@ vec4 kuwahara(vec2 n, float phi, float A, vec2 d, vec2 uv)
 
 void fragment() 
 {
-	vec4 blur = blur(UV, SCREEN_PIXEL_SIZE);
-	COLOR = blur;
-	
 	vec4 tensor = sobel(SCREEN_PIXEL_SIZE, UV);
+	vec4 blur = blur(UV, SCREEN_PIXEL_SIZE);
 	vec4 fac = scaling_factor(blur);
 	vec4 output = kuwahara(fac.xy, fac.z, fac.w, SCREEN_PIXEL_SIZE, UV);
 
