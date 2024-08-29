@@ -1,6 +1,6 @@
 shader_type canvas_item;
 
-uniform sampler2D _MainTex : hint_screen_texture, repeat_disable, filter_nearest;
+uniform sampler2D _MainTex : hint_screen_texture;
 
 uniform int _KernelSize = 6;
 uniform int _N = 8;
@@ -9,7 +9,7 @@ uniform float _Hardness = 8;
 uniform float _Q = 8;
 uniform float _Alpha = 1;
 uniform float _ZeroCrossing = 0.58;
-uniform float _Zeta = 0.666;
+uniform float _Zeta = 0.1;
 
 float gaussian(float sigma, float pos)
 {
@@ -40,8 +40,41 @@ vec4 sobel(vec2 screen_size, vec2 uv)
 		) / 4.0f;
 		
 	// Structure Tensor (4x4 matrix)
-	vec4 t = vec4(dot(sobel_x, sobel_x), dot(sobel_y, sobel_y), dot(sobel_x, sobel_y), 1.0);
+	return vec4(dot(sobel_x, sobel_x), dot(sobel_y, sobel_y), dot(sobel_x, sobel_y), 1.0);
+}
 
+vec4 blur(vec2 uv, vec2 d)
+{
+	int kernelRadius = 5;
+	
+	vec4 col = vec4(0.0);
+	float kernelSum = 0.0;
+	
+	for (int x = -kernelRadius; x <= kernelRadius; x++)
+	{
+		vec4 c = texture(_MainTex, uv + vec2(float(x), 0.0) * d.xy);
+		float gauss = gaussian(2.0, float(x));
+		
+		col += c * gauss;
+		kernelSum += gauss;
+	}
+	
+	col = col / kernelSum;
+	
+	for (int y = -kernelRadius; y <= kernelRadius; y++)
+	{
+		vec4 c = texture(_MainTex, uv + vec2(0.0, float(y)) * d.xy);
+		float gauss = gaussian(2.0, float(y));
+		
+		col += c * gauss;
+		kernelSum += gauss;
+	}
+	
+	return vec4(col / kernelSum);
+}
+
+vec4 scaling_factor(vec4 t)
+{
 	// Calculate Eigenvalues
 	float lambda1 = 0.5 * (t.x + t.y + sqrt(t.x * t.x - 2.0 * t.x * t.y + t.y * t.y + 4.0 * t.z * t.z));
 	float lambda2 = 0.5 * (t.x + t.y - sqrt(t.x * t.x - 2.0 * t.x * t.y + t.y * t.y + 4.0 * t.z * t.z));
@@ -177,8 +210,12 @@ vec4 kuwahara(vec2 n, float phi, float A, vec2 d, vec2 uv)
 
 void fragment() 
 {
-	vec4 fac = sobel(SCREEN_PIXEL_SIZE, UV);
+	vec4 blur = blur(UV, SCREEN_PIXEL_SIZE);
+	COLOR = blur;
+	
+	vec4 tensor = sobel(SCREEN_PIXEL_SIZE, UV);
+	vec4 fac = scaling_factor(blur);
 	vec4 output = kuwahara(fac.xy, fac.z, fac.w, SCREEN_PIXEL_SIZE, UV);
 
-	COLOR = clamp(output / output.w, 0.0, 1.0);
+	COLOR = output;
 }
