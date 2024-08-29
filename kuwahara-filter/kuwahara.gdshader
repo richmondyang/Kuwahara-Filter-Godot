@@ -43,7 +43,7 @@ vec4 sobel(vec2 screen_size, vec2 uv)
 	return vec4(dot(sobel_x, sobel_x), dot(sobel_y, sobel_y), dot(sobel_x, sobel_y), 1.0);
 }
 
-vec4 blur(vec2 uv, vec2 d)
+vec4 blur(vec4 tensor, vec2 uv, vec2 d)
 {
 	int kernelRadius = 5;
 	
@@ -52,7 +52,7 @@ vec4 blur(vec2 uv, vec2 d)
 	
 	for (int x = -kernelRadius; x <= kernelRadius; x++)
 	{
-		vec4 c = texture(_MainTex, uv + vec2(float(x), 0.0) * d.xy);
+		vec4 c = tensor * texture(_MainTex, uv + vec2(float(x), 0.0) * d.xy);
 		float gauss = gaussian(2.0, float(x));
 		
 		col += c * gauss;
@@ -63,7 +63,7 @@ vec4 blur(vec2 uv, vec2 d)
 	
 	for (int y = -kernelRadius; y <= kernelRadius; y++)
 	{
-		vec4 c = texture(_MainTex, uv + vec2(0.0, float(y)) * d.xy);
+		vec4 c = tensor * texture(_MainTex, uv + vec2(0.0, float(y)) * d.xy);
 		float gauss = gaussian(2.0, float(y));
 		
 		col += c * gauss;
@@ -211,9 +211,9 @@ vec4 kuwahara(vec2 n, float phi, float A, vec2 d, vec2 uv)
 void fragment() 
 {
 	vec4 tensor = sobel(SCREEN_PIXEL_SIZE, UV);
-	vec4 blur = blur(UV, SCREEN_PIXEL_SIZE);
-	vec4 fac = scaling_factor(blur);
-	vec4 output = kuwahara(fac.xy, fac.z, fac.w, SCREEN_PIXEL_SIZE, UV);
+	vec4 fac = scaling_factor(tensor);
+	vec4 blur = blur(fac, UV, SCREEN_PIXEL_SIZE);
+	vec4 output = kuwahara(blur.xy, blur.z, blur.w, SCREEN_PIXEL_SIZE, UV);
 
 	COLOR = output;
 }
