@@ -18,7 +18,6 @@ float gaussian(float sigma, float pos)
 
 vec4 sobel(vec2 screen_size, vec2 uv)
 {
-	// Calculate Eigenvectors and Eigenvalues
 	// Calculate Sobel to approximate structure tensor
 	vec2 d = screen_size.xy;
 	
@@ -45,31 +44,40 @@ vec4 sobel(vec2 screen_size, vec2 uv)
 
 vec4 blur(vec4 tensor, vec2 uv, vec2 d)
 {
+	// Gaussian Blur
 	int kernelRadius = 5;
 	
 	vec4 col = vec4(0.0);
 	float kernelSum = 0.0;
 	
+	// Blur x pass
 	for (int x = -kernelRadius; x <= kernelRadius; x++)
 	{
+		// Apply gaussian weights to current pixel color multiplied by tensor
 		vec4 c = tensor * texture(_MainTex, uv + vec2(float(x), 0.0) * d.xy);
 		float gauss = gaussian(2.0, float(x));
 		
+		// Return current pixel color multiplied by weight
 		col += c * gauss;
 		kernelSum += gauss;
 	}
 	
+	// Normalize color
 	col = col / kernelSum;
 	
+	// Blur y pass
 	for (int y = -kernelRadius; y <= kernelRadius; y++)
 	{
+		// Apply gaussian weights to current pixel color multiplied by tensor
 		vec4 c = tensor * texture(_MainTex, uv + vec2(0.0, float(y)) * d.xy);
 		float gauss = gaussian(2.0, float(y));
 		
+		// Return current pixel color multiplied by weight
 		col += c * gauss;
 		kernelSum += gauss;
 	}
 	
+	// Normalize color
 	return vec4(col / kernelSum);
 }
 
@@ -123,12 +131,16 @@ vec4 kuwahara(vec2 n, float phi, float A, vec2 d, vec2 uv)
 	
 	mat2 SR = matrixCompMult(S, R);
 	
+	
+	// Find kernel radius
 	int max_x = int(sqrt(a * a * cos_phi * cos_phi + b * b * sin_phi * sin_phi));
 	int max_y = int(sqrt(a * a * sin_phi * sin_phi + b * b * cos_phi * cos_phi));
 	
+	// Contrast threshold
 	float sinZeroCross = sin(_ZeroCrossing);
 	float eta = (_Zeta + cos(_ZeroCrossing)) / (sinZeroCross * sinZeroCross);
 	
+	// Initialize weighting matrices
 	vec4 m[8];
 	vec3 s[8];
 	
@@ -138,11 +150,13 @@ vec4 kuwahara(vec2 n, float phi, float A, vec2 d, vec2 uv)
 		s[k] = vec3(0.0);
 	}
 	
+	// Calculate Kuwahara filter weights
 	for (int y = -max_y; y <= max_y; y++)
 	{
 		for(int x = -max_x; x <= max_x; x++)
 		{
 			vec2 vec = SR * vec2(float(x), float(y));
+			// Calculates weight if within shifted radius
 			if (dot(vec, vec) <= 0.25)
 			{
 				vec3 c = texture(_MainTex, uv + vec2(float(x), float(y)) * d).rgb;
@@ -184,6 +198,7 @@ vec4 kuwahara(vec2 n, float phi, float A, vec2 d, vec2 uv)
 				
 				float g = exp(-3.125 * dot(vec, vec)) / sum;
 				
+				// Calculates polynomial weight
 				for (int k = 0; k < 8; k++)
 				{
 					float wk = w[k] * g;
@@ -194,6 +209,7 @@ vec4 kuwahara(vec2 n, float phi, float A, vec2 d, vec2 uv)
 		}
 	}
 	
+	// Calculates output color
 	vec4 output = vec4(0.0);
     for (int k = 0; k < _N; ++k) 
 	{
@@ -205,6 +221,7 @@ vec4 kuwahara(vec2 n, float phi, float A, vec2 d, vec2 uv)
 
 		output += vec4(m[k].rgb * w, w);
 	}
+	// Normalize color output
 	return clamp(output / output.w, 0.0, 1.0);
 }
 
