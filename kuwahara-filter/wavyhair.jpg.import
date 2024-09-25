@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dqlswovx26m7f"
-path="res://.godot/imported/lion.jpg-5a080ad57f720f495f5a065ecd4597d2.ctex"
+uid="uid://dcuuk61qbe28r"
+path="res://.godot/imported/wavyhair.jpg-bf460df7f98ff72f28291e2902cdd8d7.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://lion.jpg"
-dest_files=["res://.godot/imported/lion.jpg-5a080ad57f720f495f5a065ecd4597d2.ctex"]
+source_file="res://wavyhair.jpg"
+dest_files=["res://.godot/imported/wavyhair.jpg-bf460df7f98ff72f28291e2902cdd8d7.ctex"]
 
 [params]
 

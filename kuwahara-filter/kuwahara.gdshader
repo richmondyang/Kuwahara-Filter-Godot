@@ -2,13 +2,20 @@ shader_type canvas_item;
 
 uniform sampler2D _MainTex : hint_screen_texture;
 
-uniform int _KernelSize = 6;
-uniform int _N = 8;
+// Controls kernel diameter
+uniform int _KernelSize = 4;
+// Controls kernel segments
+const int _N = 8;
 
-uniform float _Hardness = 8;
-uniform float _Q = 8;
-uniform float _Alpha = 1;
-uniform float _ZeroCrossing = 0.58;
+// Controls high frequency detail
+uniform float _Hardness = 8.0;
+// Controls sharpness of "paint splotches"
+uniform float _Sharpness = 8.0;
+// Controls alpha value
+const float _Alpha = 1.0;
+// Controls kernel threshold
+const float _ZeroCrossing = 0.58;
+// Controls polynomial weights distribution, high numbers equivalent to blurring image
 uniform float _Zeta = 0.1;
 
 float gaussian(float sigma, float pos)
@@ -217,7 +224,7 @@ vec4 kuwahara(vec2 n, float phi, float A, vec2 d, vec2 uv)
 		s[k] = abs(s[k] / m[k].w - m[k].rgb * m[k].rgb);
 
 		float sigma2 = s[k].r + s[k].g + s[k].b;
-		float w = 1.0 / (1.0 + pow(_Hardness * 1000.0 * sigma2, 0.5 * _Q));
+		float w = 1.0 / (1.0 + pow(_Hardness * 1000.0 * sigma2, 0.5 * _Sharpness));
 
 		output += vec4(m[k].rgb * w, w);
 	}
